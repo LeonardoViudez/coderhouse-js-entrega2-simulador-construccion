@@ -1,31 +1,149 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Simulador de materiales de construcción</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script defer src="simuladorConstruccion.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Simulador construcción esencial EASY</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link rel="icon" href="https://arcencohogareasy.vteximg.com.br/arquivos/favicon.ico" type="image/x-icon">
+  <link rel="stylesheet"href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+<style>
+body{
+  font-family: 'Montserrat';
+}
+</style>
 </head>
-<body>
-  <main>
-    <h1>Simulador de materiales para construcción</h1>
+<body class="bg-light">
+  <main class="py-3">
+    <div class="container">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <h1 class="h4 mb-1"><b>Simulador de costos de materiales</b></h1>
+          <small class="text-muted">Calculador de materiales esenciales para que armes la casa ideal.</small>
+        </div>
 
-    <p>
-      Este simulador calcula una estimación básica de materiales necesarios para construir una vivienda en Argenina 2025/2026,
-      en función de los metros cuadrados, el tipo de ladrillo seleccionado (común u hueco) y el costo de las
-      bolsas de cemento y arena ingresados por el usuario.
-    </p>
+        <img src="https://arcencohogareasy.vtexassets.com/assets/vtex.file-manager-graphql/images/70762c9e-9f1a-4061-9113-144b83dd8370___389e812d088de026179c879e8ddb85da.svg" alt="easy logo" width="130"/>
+      </div>
 
-    <p>
-      Toda la interacción se realiza mediante cuadros de diálogo (<code>prompt</code>, <code>alert</code>,
-      <code>confirm</code>) y la consola de JavaScript del navegador. Para usarlo, abrí este archivo en el
-      navegador, presioná F12 (o inspeccionar) y mirá la pestaña "Consola" antes de recargar la página.
-    </p>
+      <div class="row g-3">
+        <div class="col-12 col-lg-6">
+          <div class="card">
+            <div class="card-body">
+              <form id="form-simulador" novalidate>
+                <div class="mb-3">
+                  <label for="input-m2" class="form-label">Metros cuadrados</label>
+                  <input type="number" id="input-m2" class="form-control" placeholder="Ej: 80" min="1" required/>
+                  <div class="invalid-feedback">Poné un número mayor a 0.</div>
+                </div>
 
-    <p>
-      Proyecto realizado como Entrega N° 1 del curso de JavaScript de Coderhouse.
-    </p>
+                <div class="mb-3">
+                  <label for="select-tipo-ladrillo" class="form-label">Tipo de ladrillo</label>
+                  <select id="select-tipo-ladrillo" class="form-select" required>
+                    <option value="" selected disabled>Elegí uno</option>
+                    <option value="comun">comun</option>
+                    <option value="hueco">hueco</option>
+                  </select>
+                  <div class="invalid-feedback">Elegí una opción.</div>
+                </div>
+
+                <div class="mb-3">
+                  <label for="input-precio-cemento" class="form-label">
+                    Precio bolsa cemento 25kg
+                  </label>
+                  <div class="input-group">
+                    <span class="input-group-text">$</span>
+                    <input type="number" id="input-precio-cemento" class="form-control" placeholder="Ej: 12000" min="1" required/>
+                  </div>
+                  <div class="invalid-feedback">Precio inválido.</div>
+                </div>
+
+                <div class="mb-4">
+                  <label for="input-precio-arena" class="form-label">
+                    Precio bolsa arena 25kg
+                  </label>
+                  <div class="input-group">
+                    <span class="input-group-text">$</span>
+                    <input type="number" id="input-precio-arena" class="form-control" placeholder="Ej: 9000" min="1" required />
+                  </div>
+                  <div class="invalid-feedback">Precio inválido.</div>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100" id="btn-calcular">
+                  Calcular
+                </button>
+
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 col-lg-6">
+          <div class="mb-3">
+            <div class="card">
+              <div class="card-body">
+                <h2 class="h6 mb-3">Resultados</h2>
+
+                <div class="mb-2 small text-muted">
+                  <div>
+                    <strong>Metros²:</strong>
+                    <span id="resumen-m2">-</span>
+                  </div>
+                  <div>
+                    <strong>Tipo de ladrillo:</strong>
+                    <span id="resumen-tipo-ladrillo">-</span>
+                  </div>
+                </div>
+
+                <hr class="my-2">
+
+                <p class="mb-2 small fw-semibold">Materiales y costos aprox.:</p>
+                <ul class="list-unstyled mb-3" id="lista-materiales">
+                  <li class="text-muted small">Todavía no hay simulaciones.</li>
+                </ul>
+
+                <div class="border-top pt-2">
+                  <span class="small">Costo total:</span>
+                  <div id="resumen-total" class="fs-4 fw-bold text-primary">
+                    $ -
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="card">
+              <div class="card-body">
+                <div class="d-flex align-items-center mb-2">
+                  <i class="fa-regular fa-clock me-1"></i>
+                  <span class="small fw-semibold">Historial de simulaciones</span>
+                </div>
+                <div class="table-responsive" style="max-height:220px;overflow-y:auto;">
+                  <table class="table table-sm align-middle mb-0">
+                    <thead class="table-light position-sticky top-0">
+                      <tr>
+                        <th class="small">Fecha</th>
+                        <th class="small">m²</th>
+                        <th class="small">Tipo</th>
+                        <th class="small text-end">Total</th>
+                      </tr>
+                    </thead>
+                    <tbody id="tbody-historial" class="small">
+
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
   </main>
 
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="simuladorConstruccion.js"></script>
 </body>
 </html>

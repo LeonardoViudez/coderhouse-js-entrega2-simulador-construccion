@@ -1,2 +1,2 @@
-# entrega_jscoderhouse
-Primer entrega del curso de Javascript de Coderhouse. Simulador de costo de materiales para una construcción, pide m2 de la casa, costo de pallet de ladrillos huecos o comunes y arroja un costo estimado de lo que necesita el usuario para poder contruir.
+# entrega2_jscoderhouse
+Segunda entrega del simulador para calcular costos y cantidad de materiales básicos para una construcción. Ahora todo pasa dentro del DOM, el usuario puede interactuar y calcular de una forma más visual e interactiva. Además se sumó un historial para que queden guardados todos los calculos anteriores.

@@ -1,42 +1,26 @@
-// variables constantes del simulador
+// variables fijas
+
 const LADRILLOS_POR_M2_COMUN = 60;
 const LADRILLOS_POR_M2_HUECO = 45;
 
 const LADRILLOS_POR_PALLET_COMUN = 1000;
 const LADRILLOS_POR_PALLET_HUECO = 144;
 
-const BOLSAS_CEMENTO_POR_M2 = 0.2; // 1 bolsa de cemento 25kg cada 5 m2
-const BOLSAS_ARENA_POR_M2 = 0.3;  // 1 bolsa de arena 25kg cada 3,3 m2
+const BOLSAS_CEMENTO_POR_M2 = 0.2; //1 bolsa cada 5m2
+const BOLSAS_ARENA_POR_M2 = 0.3;   //1 bolsa cada 3,3m2
 
 const COSTO_PALLET_LADRILLO_COMUN = 120000;
 const COSTO_PALLET_LADRILLO_HUECO = 100000;
 
-console.log("Simulador de construcción cargado.");
+const STORAGE_KEY = "simulacionesConstruccion";
 
-function pedirNumero(mensaje) {
-  while (true) {
-    const respuesta = prompt(mensaje);
-    if (respuesta === null) return null;
 
-    const valor = parseFloat(respuesta.replace(",", "."));
-    if (!isNaN(valor) && valor > 0) return valor;
-
-    alert("Ingresá un número mayor a 0");
-  }
+function formatearPesos(valor) {
+  if (isNaN(valor)) return "-";
+  return valor.toLocaleString("es-AR");
 }
 
-function pedirTipoLadrillo() {
-  while (true) {
-    const respuesta = prompt('Ingresá el tipo de ladrillo: "comun" o "hueco"');
-    if (respuesta === null) return null;
-
-    const tipo = respuesta.trim().toLowerCase();
-    if (tipo === "comun" || tipo === "hueco") return tipo;
-
-    alert('Opción NO VÁLIDA. Escribí "comun" o "hueco".');
-  }
-}
-
+// materiales en base a m2 y tipo de ladrillo
 function calcularMateriales(m2, tipoLadrillo) {
   const ladrillosPorM2 = tipoLadrillo === "comun"
     ? LADRILLOS_POR_M2_COMUN
@@ -58,66 +42,190 @@ function calcularMateriales(m2, tipoLadrillo) {
   return { pallets, bolsasCemento, bolsasArena, costoPallet };
 }
 
-function simuladorConstruccion() {
-  console.clear();
-  console.log("Simulador de materiales para construcción");
+// local storage
 
-  const m2 = pedirNumero("Ingresá los metros cuadrados de la vivienda:");
-  if (m2 === null) return;
+function cargarHistorial() {
+  const guardado = localStorage.getItem(STORAGE_KEY);
+  if (!guardado) return [];
 
-  const tipoLadrillo = pedirTipoLadrillo();
-  if (tipoLadrillo === null) return;
-  const precioCemento = pedirNumero("Ingresá el precio de tu bolsa de cemento de 25kg:");
-  if (precioCemento === null) return;
-  const precioArena = pedirNumero("Ingresá el precio de tu bolsa de arena de 25kg:");
-  if (precioArena === null) return;
-
-  const materialesCalc = calcularMateriales(m2, tipoLadrillo);
-
-  const materiales = [
-    {
-      nombre: `Pallets de ladrillo ${tipoLadrillo}`,
-      cantidad: materialesCalc.pallets,
-      precioUnitario: materialesCalc.costoPallet
-    },
-    {
-      nombre: "Bolsas de cemento 25kg",
-      cantidad: materialesCalc.bolsasCemento,
-      precioUnitario: precioCemento
-    },
-    {
-      nombre: "Bolsas de arena 25kg",
-      cantidad: materialesCalc.bolsasArena,
-      precioUnitario: precioArena
-    }
-  ];
-
-  let costoTotal = 0;
-  let detalle = "";
-
-  console.log("Detalle de materiales y costos:");
-  for (let i = 0; i < materiales.length; i++) {
-
-    const mat = materiales[i];
-    const subtotal = mat.cantidad * mat.precioUnitario;
-    costoTotal += subtotal;
-    console.log(`${mat.nombre}: ${mat.cantidad} x $${mat.precioUnitario} = $${subtotal}`);
-    detalle += `- ${mat.nombre}: ${mat.cantidad} → $${subtotal}\n`;
+  try {
+    const parsed = JSON.parse(guardado);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (error) {
+    console.error("Error leyendo historial", error);
+    return [];
   }
-
-  console.log("Costo total aproximado: $" + costoTotal);
-
-  const resumen =
-    "Simulación de materiales para construcción\n" +
-    "----------------------------------------\n" +
-    `Metros cuadrados: ${m2}\n` +
-    `Tipo de ladrillo: ${tipoLadrillo}\n\n` +
-    "Materiales y costos aproximados:\n" +
-    detalle +
-    "\n" +
-    `Costo TOTAL aproximado: $${costoTotal}`;
-
-  alert(resumen);
 }
 
-simuladorConstruccion();
+function guardarHistorial(historial) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(historial));
+}
+
+function formatearFecha(fechaISO) {
+  const fecha = new Date(fechaISO);
+  return fecha.toLocaleString("es-AR", {
+    dateStyle: "short",
+    timeStyle: "short",
+  });
+}
+
+// Render de resultados
+
+function actualizarResultados(simulacion) {
+  const spanM2 = document.getElementById("resumen-m2");
+  const spanTipo = document.getElementById("resumen-tipo-ladrillo");
+  const listaMateriales = document.getElementById("lista-materiales");
+  const resumenTotal = document.getElementById("resumen-total");
+
+  spanM2.textContent = simulacion.m2;
+  spanTipo.textContent = simulacion.tipoLadrillo;
+
+  // limpiar la lista
+  listaMateriales.innerHTML = "";
+
+  simulacion.materiales.forEach((mat) => {
+    const li = document.createElement("li");
+    li.className = "d-flex justify-content-between align-items-center mb-1 small";
+
+    const subtotal = mat.cantidad * mat.precioUnitario;
+
+    // icono según el material
+    const icono = document.createElement("i");
+    icono.className = mat.iconClass + " me-1";
+
+    const contIzq = document.createElement("div");
+    contIzq.appendChild(icono);
+    contIzq.append(
+      document.createTextNode(`${mat.nombre}: ${mat.cantidad}`)
+    );
+
+    const contDer = document.createElement("span");
+    contDer.className = "fw-semibold";
+    contDer.textContent = "$ " + formatearPesos(subtotal);
+
+    li.appendChild(contIzq);
+    li.appendChild(contDer);
+
+    listaMateriales.appendChild(li);
+  });
+
+  resumenTotal.textContent = "$ " + formatearPesos(simulacion.costoTotal);
+}
+
+// export de historial
+
+function actualizarHistorial(historial) {
+  const tbody = document.getElementById("tbody-historial");
+  tbody.innerHTML = "";
+
+  if (historial.length === 0) {
+    const tr = document.createElement("tr");
+    const td = document.createElement("td");
+    td.colSpan = 4;
+    td.className = "text-muted small text-center";
+    td.textContent = "Todavía no hay simulaciones guardadas.";
+    tr.appendChild(td);
+    tbody.appendChild(tr);
+    return;
+  }
+
+  historial.forEach((simulacion) => {
+    const tr = document.createElement("tr");
+
+    const tdFecha = document.createElement("td");
+    tdFecha.textContent = formatearFecha(simulacion.fecha);
+
+    const tdM2 = document.createElement("td");
+    tdM2.textContent = simulacion.m2;
+
+    const tdTipo = document.createElement("td");
+    tdTipo.textContent = simulacion.tipoLadrillo;
+
+    const tdTotal = document.createElement("td");
+    tdTotal.className = "text-end";
+    tdTotal.textContent = "$ " + formatearPesos(simulacion.costoTotal);
+
+    tr.appendChild(tdFecha);
+    tr.appendChild(tdM2);
+    tr.appendChild(tdTipo);
+    tr.appendChild(tdTotal);
+
+    tbody.appendChild(tr);
+  });
+}
+
+// main: eventos y flujo
+
+document.addEventListener("DOMContentLoaded", () => {
+  const form = document.getElementById("form-simulador");
+  const inputM2 = document.getElementById("input-m2");
+  const selectTipo = document.getElementById("select-tipo-ladrillo");
+  const inputPrecioCemento = document.getElementById("input-precio-cemento");
+  const inputPrecioArena = document.getElementById("input-precio-arena");
+
+  let historial = cargarHistorial();
+  actualizarHistorial(historial);
+
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+
+    // Validación HTML5 con Bootstrap 5
+    if (!form.checkValidity()) {
+      form.classList.add("was-validated");
+      return;
+    }
+    const m2 = Number(inputM2.value);
+    const tipoLadrillo = selectTipo.value;
+    const precioCemento = Number(inputPrecioCemento.value);
+    const precioArena = Number(inputPrecioArena.value);
+
+    const materialesCalc = calcularMateriales(m2, tipoLadrillo);
+    const materiales = [
+      {
+        nombre: `Pallets de ladrillo ${tipoLadrillo}`,
+        cantidad: materialesCalc.pallets,
+        precioUnitario: materialesCalc.costoPallet,
+        iconClass: "fa-solid fa-bricks text-success",
+      },
+      {
+        nombre: "Bolsas de cemento 25kg",
+        cantidad: materialesCalc.bolsasCemento,
+        precioUnitario: precioCemento,
+        iconClass: "fa-solid fa-sack-xmark text-secondary",
+      },
+      {
+        nombre: "Bolsas de arena 25kg",
+        cantidad: materialesCalc.bolsasArena,
+        precioUnitario: precioArena,
+        iconClass: "fa-solid fa-mound text-warning",
+      },
+    ];
+
+    let costoTotal = 0;
+    materiales.forEach((mat) => {
+      costoTotal += mat.cantidad * mat.precioUnitario;
+    });
+
+    const simulacion = {
+      id: Date.now(),
+      fecha: new Date().toISOString(),
+      m2,
+      tipoLadrillo,
+      precioCemento,
+      precioArena,
+      materiales,
+      costoTotal,
+    };
+
+    // muestra resultados en el panel de la derecha
+    actualizarResultados(simulacion);
+
+    // actualizar historial (el más nuevo primero)
+    historial.unshift(simulacion);
+    guardarHistorial(historial);
+    actualizarHistorial(historial);
+
+    // deja activada la clase de validación para que se vean los estados del form
+    form.classList.add("was-validated");
+  });
+});
