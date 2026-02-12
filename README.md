@@ -1,2 +1,2 @@
-# entrega2_jscoderhouse
-Segunda entrega del simulador para calcular costos y cantidad de materiales básicos para una construcción. Ahora todo pasa dentro del DOM, el usuario puede interactuar y calcular de una forma más visual e interactiva. Además se sumó un historial para que queden guardados todos los calculos anteriores.
+# entregafinal_jscoderhouse
+Entrega final del simulador para calcular costos y cantidad de materiales básicos para una construcción. Todo pasa dentro del DOM y el usuario puede interactuar y calcular de una forma más visual e interactiva, se mejoré el historial para que queden guardados todos los calculos anteriores y botón de limpiar. Los precios de materiales y envios son traídos desde un JSON.

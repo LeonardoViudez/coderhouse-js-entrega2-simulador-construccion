@@ -75,7 +75,7 @@ async function cargarConfig() {
   if (!resp.ok) throw new Error("No se pudo cargar el config.json");
   const data = await resp.json();
 
-  // Validación mínima
+  // Validación
   if (!data?.preciosMateriales || !data?.costosFijos || !Array.isArray(data?.provincias)) {
     throw new Error("config.json inválido");
   }
@@ -120,7 +120,7 @@ function calcularMateriales(m2, tipoLadrillo, config) {
     ? LADRILLOS_POR_PALLET_COMUN
     : LADRILLOS_POR_PALLET_HUECO;
 
-  // costo desde JSON
+  // costo desde el JSON
   const costoPallet = tipoLadrillo === "comun"
     ? config.costosFijos.palletLadrilloComun
     : config.costosFijos.palletLadrilloHueco;
@@ -158,7 +158,7 @@ function actualizarResultados(simulacion) {
   spanTipo.textContent = simulacion.tipoLadrillo;
   spanProv.textContent = simulacion.provinciaNombre || "-";
 
-  // lista materiales
+  // listado materiales
   listaMateriales.innerHTML = "";
   simulacion.materiales.forEach((mat) => {
     const li = document.createElement("li");
@@ -189,7 +189,7 @@ function actualizarResultados(simulacion) {
 }
 
 // ======================
-// RENDER HISTORIAL
+// RENDERS HISTORIAL
 // ======================
 
 function actualizarHistorial(historial) {
@@ -276,12 +276,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   } catch (e) {
     setEstadoConfig("Error cargando config.json ❌", true);
     toast("Error cargando config.json. Revisá /data/config.json", "error");
-    // si falla, no tiene sentido calcular
+    // si falla, no calcular
     if (btnCalcular) btnCalcular.disabled = true;
     return;
   }
 
-  // limpiar historial
+  // limpia historial
   btnLimpiar?.addEventListener("click", () => {
     historial = [];
     guardarHistorial(historial);
@@ -299,7 +299,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     toast("Historial limpiado", "ok");
   });
 
-  // submit
+  // envio
   form.addEventListener("submit", (event) => {
     event.preventDefault();
 
@@ -351,7 +351,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       costoMateriales += mat.cantidad * mat.precioUnitario;
     });
 
-    // envío (si está checkeado)
+    // envío (si está ok)
     const costoEnvio = checkEnvio.checked
       ? calcularEnvio(provinciaObj, materialesCalc.bolsasCemento, materialesCalc.bolsasArena)
       : 0;
