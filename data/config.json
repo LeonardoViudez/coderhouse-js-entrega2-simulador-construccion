@@ -1,0 +1,18 @@
+{
+    "preciosMateriales": {
+      "cemento25kg": 12000,
+      "arena25kg": 9000
+    },
+    "costosFijos": {
+      "palletLadrilloComun": 120000,
+      "palletLadrilloHueco": 100000
+    },
+    "provincias": [
+      { "id": "ba", "nombre": "Buenos Aires (Provincia)", "envio": { "cemento": 1800, "arena": 2000 } },
+      { "id": "caba", "nombre": "CABA", "envio": { "cemento": 1600, "arena": 1900 } },
+      { "id": "sf", "nombre": "Santa Fe", "envio": { "cemento": 1700, "arena": 2000 } },
+      { "id": "cb", "nombre": "Córdoba", "envio": { "cemento": 1900, "arena": 2200 } },
+      { "id": "er", "nombre": "Entre Ríos", "envio": { "cemento": 1750, "arena": 2050 } }
+    ]
+  }
+  
